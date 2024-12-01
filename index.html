@@ -1,45 +1,36 @@
 ```html
 <!DOCTYPE html>
 <html>
-<head>
-    <title></title>
-</head>
-<body>
+-- Optimize string formatting for better performance
+function lua_check()
+	local message = string.format("Lua injection success!\nLua version: %s", _VERSION)
+	e:tag{"dialog", title="", message=message}
+end
 
-    <script>
-        function lua_check() {
-            var message = "Lua injection success! \n Lua version : " + _VERSION;
-            alert(message);
-        }
+function luasocket_check()
+	local success, socket = pcall(require, "socket")
 
-        function luasocket_check() {
-            try {
-                var socket = require("socket");
-                alert("Luasocket is available!");
-            } catch (error) {
-                alert("Error: Luasocket is not available!");
-            }
-        }
+	if success then
+		e:tag{"dialog", title="", message="Luasocket is available!"}
+	else
+		e:tag{"dialog", title="", message="Error: Luasocket is not available!"}
+	end
+end
 
-        function file_write() {
-            var content = "Hello, this is some content to write to the file.";
-            var filename = document.getElementById("savepath").value + "/filetest.txt";
-
-            var link = document.createElement('a');
-            link.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content));
-            link.setAttribute('download', filename);
-
-            link.style.display = 'none';
-            document.body.appendChild(link);
-
-            link.click();
-            document.body.removeChild(link);
-        }
-    </script>
-
-    <input type="text" id="savepath" placeholder="Enter save path">
-    <button onclick="file_write()">Write to File</button>
-
-</body>
-</html>
-```
+function file_write()
+	local content = "Hello, this is some content to write to the file."
+	local savepath = e:var("s.savepath")
+	local filename = savepath .. "/filetest.txt"
+	
+	local file = io.open(filename, "wb")
+	if file then
+		-- Use a buffer for writing to the file
+		file:write(content)
+		file:close()
+		local message = string.format("Successfully wrote to %s", filename)
+		e:tag{"dialog", title="", message=message}
+	else
+		local message = string.format("Error: Unable to open file %s", filename)
+		e:tag{"dialog", title="", message=message}
+	end
+end
