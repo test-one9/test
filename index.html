@@ -1,84 +1,56 @@
 <!DOCTYPE html>
-<html >
-  <head>
-    <style>
-      html {
-        background-color: #363642;
-        color: #fff;
-        font-size: 1.2em;
-        font-family: "Open Sans", sans-serif;
-        box-sizing: border-box;
-        padding-top: 10%;
-        margin-left: auto;
-        margin-right: auto;
-        text-align: center;
-      }
+<p>PASS if no crash.</p>
+<script>
+let testNumber = 0;
 
-      .button {
-        line-height: 48px;
-        text-align: center;
-        display: inline-block;
-        text-decoration: none !important;
-        border: none !important;
-        padding: 0 2em;
-        font-weight: bold;
-        color: #363642;
-      }
+function compareArray(expected, actual) {
+    if (!expected && !actual) return true;
+    if (!expected || !actual) return false;
+    if (expected.length !== actual.length) return false;
+    
+    for (let i = 0; i < expected.length; i++) {
+        if (expected[i] !== actual[i]) return false;
+    }
+    
+    return true;
+}
 
-      .button.button--large {
-        line-height: 64px;
-        height: 64px;
-        border-radius: 32px;
-        background-color: #28c799;
-        padding: 0 2em;
-        font-size: 1.2rem;
-      }
+function compareGroups(expectedGroups, actualGroups) {
+    if (!expectedGroups && !actualGroups) return true;
+    if (!expectedGroups || !actualGroups) return false;
+    
+    const expectedKeys = Object.keys(expectedGroups);
+    const actualKeys = Object.keys(actualGroups);
+    
+    if (expectedKeys.length !== actualKeys.length) return false;
+    
+    for (const key of expectedKeys) {
+        if (expectedGroups[key] !== actualGroups[key]) return false;
+    }
+    
+    return true;
+}
 
-      .intro__title {
-        display: inline-block;
-        text-align: center;
-        font-size: 3em;
-        margin: 2rem 0;
-      }
+function testRegExp(re, str, exp, groups) {
+    testNumber++;
 
-      .title__sub {
-        margin-top: 0;
-        text-align: right;
-        font-size: 1rem;
-      }
+    if (groups && exp) {
+        exp.groups = groups;
+    }
 
-      .callToAction {
-        margin: 4rem 0;
-        text-align: center;
-      }
+    let actual = re.exec(str);
+    
+    let result = compareArray(exp, actual);
+    
+    if (exp && exp.groups) {
+        if (!compareGroups(exp.groups, actual.groups)) {
+            result = false;
+        }
+    }
+}
 
-      .callToAction .button {
-        max-width: 320px;
-        margin: 0 auto;
-        background-color: #48DDB3;
-      }
-
-      #test {
-        display: none;
-      }
-    </style>
-  </head>
-  <body>
-    <h1 class="intro__title">
-      PegaSwitch
-      <div class="title__sub">
-        by ReSwitched
-      </div>
-    </h1>
-
-    <section class="callToAction">
-      <a onclick="location.reload()" class="button">
-        Refresh
-      </a>
-    </section>
-
-    <button id="test" class='largeButton' onclick="window.minmain();">Test</button>
-
-    <script src="minmain.js"></script>
-  </body>
-</html>
+testRegExp(/(?<=($)(N*?)*)x/i, "aabbbccc", null);
+testRegExp(/(?<=a(N*?)*)b/i, "aabbbccc", ["b", undefined]);
+testRegExp(/(?<=a(b*?)*)bc/i, "aabbccc", ["bc", "b"]);
+testRegExp(/(?<=A(?:b*?))bc/i, "aaaaaabbccc", ["bc"]);
+</script>
